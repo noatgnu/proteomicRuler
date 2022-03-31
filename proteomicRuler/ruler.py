@@ -12,15 +12,15 @@ sns.color_palette("magma", as_cmap=True)
 class Ruler:
     regex_intensity = re.compile(r"^[Ii]ntensity(.*)$")
 
-    def __init__(self, df, intensity_columns = []):
-        self.protein_ids_column = "Majority protein IDs"
+    def __init__(self, df, intensity_columns = [], mw_col = "Mol. weight [kDa]", protein_ids_column = "Majority protein IDs", ploidy = 2, total_cellular_protein_concentration = 200):
+        self.protein_ids_column = protein_ids_column
         self.logarithmized = False
         self.averaging_mode = 0
-        self.molecular_mass_column = "Mol. weight [kDa]"
+        self.molecular_mass_column = mw_col
         self.detectability_correction = False
         self.scaling_mode = 1
-        self.ploidy = 2
-        self.total_cellular_protein_concentration = 200
+        self.ploidy = ploidy
+        self.total_cellular_protein_concentration = total_cellular_protein_concentration
         self.output = ["Copy number per cell", "Concentration [nM]", "Separate sample summary tab"]
         self.df = df
         self.sample_name_dict = {}
@@ -45,7 +45,7 @@ class Ruler:
         self.cvalue = self.organism[1] * constant.base_pair_weight/constant.avogadro
         self.genes = []
         weighted_normalized_summed_histone_intensities_dict = self.calculate_weighted_histone_sum_normalization_factor()
-        print(weighted_normalized_summed_histone_intensities_dict)
+
         self.calculate_normalization_factor(weighted_normalized_summed_histone_intensities_dict)
 
         self.calculate_copy_numbers()
@@ -119,28 +119,41 @@ class Ruler:
         self.organism = self.histone.get_organism(ids)
 
     def check_and_convert_dalton(self):
+        print(self.df[self.molecular_mass_column])
         print(np.median(self.df[self.molecular_mass_column]))
         if np.median(self.df[self.molecular_mass_column]) < 250:
             self.df[self.molecular_mass_column] = self.df[self.molecular_mass_column] * 1000
 
-    def load_genes(self, path=r"C:\Users\toanp\PycharmProjects\proteomicRuler\proteomicRuler\selectedgene.txt"):
-        with open(path, "rt") as geneNames:
-            self.genes = [i.strip() for i in geneNames]
+    def load_genes(self, path=r"C:\Users\toanp\PycharmProjects\proteomicRuler\proteomicRuler\selectedgene.txt", gene_list = []):
+        if len(gene_list) > 0:
+            self.genes = gene_list
+        else:
+            with open(path, "rt") as geneNames:
+                self.genes = [i.strip() for i in geneNames]
 
-            for i, r in self.df.iterrows():
-                if r["Gene names"] in self.genes:
-                    self.df.at[i, "selected"] = "Selected"
-                else:
-                    self.df.at[i, "selected"] = "Not selected"
+        for i, r in self.df.iterrows():
+            if r["Gene names"] in self.genes:
+                self.df.at[i, "selected"] = "Selected"
+            else:
+                self.df.at[i, "selected"] = "Not selected"
+
     def plot(self):
         for i in self.sample_name_dict:
-            temp = self.df[["Gene names", i+"_copyNumbers", "rank_"+i, "selected"]]
-            temp = temp[pd.notnull(temp[i+"_copyNumbers"])&(temp[i+"_copyNumbers"]!=0)]
-            temp["log(10) copy number"] = np.log10(temp[i+"_copyNumbers"])
+            temp = self.df[pd.notnull(self.df[i + "_copyNumbers"]) & (self.df[i + "_copyNumbers"] != 0)]
+            temp["log(10) copy number"] = np.log10(temp[i + "_copyNumbers"])
             fig, ax = plt.subplots(figsize=(10, 10))
-            sns.scatterplot(data=temp, x="rank_"+i, y="log(10) copy number", hue="log(10) copy number", style="selected", style_order=["Not selected", "Selected"],legend=False, linewidth=0.1, ax=ax)
-            for i2, r in temp.iterrows():
-                if r["selected"]=="Selected":
-                    plt.text(r["rank_"+i], r["log(10) copy number"], r["Gene names"], size='medium', color='black', weight='semibold')
-            plt.savefig(i+"_result.svg")
-            plt.clf()
+            if "selected" in temp.columns:
+                temp = temp[["Gene names", i + "_copyNumbers", "rank_" + i, "selected"]]
+                sns.scatterplot(data=temp, x="rank_"+i, y="log(10) copy number", hue="log(10) copy number", style="selected", style_order=["Not selected", "Selected"],legend=False, linewidth=0.1, ax=ax)
+                for i2, r in temp.iterrows():
+                    if r["selected"]=="Selected":
+                        plt.text(r["rank_"+i], r["log(10) copy number"], r["Gene names"], size='medium', color='black', weight='semibold')
+                plt.savefig(i+"_result.svg")
+                plt.clf()
+            else:
+
+                sns.scatterplot(data=temp, x="rank_" + i, y="log(10) copy number", hue="log(10) copy number",
+                                legend=False, linewidth=0.1,
+                                ax=ax)
+                plt.savefig(i + "_result.svg")
+                plt.clf()
