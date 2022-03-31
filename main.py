@@ -37,12 +37,19 @@ def add_mw(df, accession_id_col):
 
 if __name__ == "__main__":
     need_mw = True
+    # used to indicate whether or not to directly fetch mw data from UniProt
     accession_id_col = "Protein ID"
+    # used as unique index and to directly fetch mw data from UniProt
     filename = r"\\mrc-smb.lifesci.dundee.ac.uk\mrc-group-folder\ALESSI\Toan\For MS-Fragger\C21orf2_protein.tsv"
+    # used for loading the input dataframe
     intensity_columns = ["WT-01", "WT-02", "WT-03", "WT-04", "WT-05", "C21Orf2-01", "C21Orf2-02", "C21Orf2-03", "C21Orf2-04", "C21Orf2-05"]
+    # string of column names containing samples' intensity
     mw_col = "Mass"
+    # molecular weight column name
     ploidy = 2
+    # ploidy number
     total_cellular_protein_concentration = 200
+    # cellular protein concentration used for calculation of total volume
 
     df = pd.read_csv(filename, sep="\t")
     if need_mw:
@@ -53,3 +60,4 @@ if __name__ == "__main__":
     ruler = Ruler(df, intensity_columns, mw_col, accession_id_col, ploidy, total_cellular_protein_concentration)
     ruler.df.to_csv(filename+"output.tsv", sep="\t", index=False)
     ruler.plot()
+    print("Finished")
