@@ -12,7 +12,7 @@ sns.color_palette("magma", as_cmap=True)
 class Ruler:
     regex_intensity = re.compile(r"^[Ii]ntensity(.*)$")
 
-    def __init__(self, df):
+    def __init__(self, df, intensity_columns = []):
         self.protein_ids_column = "Majority protein IDs"
         self.logarithmized = False
         self.averaging_mode = 0
@@ -28,11 +28,15 @@ class Ruler:
         self.total_protein = 0
         self.histone = HistoneDB()
         self.histone.get_histones()
-        for i in self.df.columns:
-            s = self.regex_intensity.search(i)
-            if s:
-                print(s.group(1))
-                self.sample_name_dict[i] = s.group(1)
+        if len(intensity_columns) != 0:
+            for i in intensity_columns:
+                self.sample_name_dict[i] = i 
+        else:
+            for i in self.df.columns:
+                s = self.regex_intensity.search(i)
+                if s:
+                    print(s.group(1))
+                    self.sample_name_dict[i] = s.group(1)
         self.df["normalization_factor"] = self.df[self.molecular_mass_column]
         self.df["normalization_factor"] = self.df["normalization_factor"].fillna(1)
         self.df["normalization_factor"] = self.df["normalization_factor"].replace(0, 1)
