@@ -59,5 +59,4 @@ if __name__ == "__main__":
     df[mw_col] = df[mw_col].astype(float)
     ruler = Ruler(df, intensity_columns, mw_col, accession_id_col, ploidy, total_cellular_protein_concentration)
     ruler.df.to_csv(filename+"output.tsv", sep="\t", index=False)
-    ruler.plot()
     print("Finished")

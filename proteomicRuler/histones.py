@@ -1,12 +1,14 @@
 import pandas as pd
 import numpy as np
+import os
 
 class HistoneDB:
     def __init__(self):
         self.df = pd.DataFrame()
 
     def get_histones(self):
-        with open(r"C:\Users\toanp\PycharmProjects\proteomicRuler\proteomicRuler\organisms.json", "rb") as jsonfile:
+        d, _ = os.path.split(__file__)
+        with open(os.path.join(d, "organisms.json"), "rb") as jsonfile:
             df = pd.read_json(jsonfile).T
             df = df.explode("histone_ids").reset_index(drop=True)
             df.set_index("histone_ids", inplace=True)

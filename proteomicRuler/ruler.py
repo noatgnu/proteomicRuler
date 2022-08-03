@@ -1,6 +1,11 @@
+import os.path
+from io import StringIO
+
 import numpy as np
 import pandas as pd
 from scipy.stats import rankdata
+from uniprotparser.parser import UniprotSequence, UniprotParser
+
 from proteomicRuler import constant
 from proteomicRuler.histones import HistoneDB
 import re
@@ -137,9 +142,13 @@ class Ruler:
             else:
                 self.df.at[i, "selected"] = "Not selected"
 
-    def plot(self):
+    def plot(self, output_folder="", selected=[]):
         for i in self.sample_name_dict:
             temp = self.df[pd.notnull(self.df[i + "_copyNumbers"]) & (self.df[i + "_copyNumbers"] != 0)]
+            if len(selected) > 0:
+                for i2, r in temp.iterrows():
+                    if r["Gene names"] in selected:
+                        temp.at[i2, "selected"] = "+"
             temp["log(10) copy number"] = np.log10(temp[i + "_copyNumbers"])
             fig, ax = plt.subplots(figsize=(10, 10))
             if "selected" in temp.columns:
@@ -148,12 +157,44 @@ class Ruler:
                 for i2, r in temp.iterrows():
                     if r["selected"]=="Selected":
                         plt.text(r["rank_"+i], r["log(10) copy number"], r["Gene names"], size='medium', color='black', weight='semibold')
-                plt.savefig(i+"_result.svg")
+                plt.savefig(os.path.join(output_folder, i + "_result.svg"))
                 plt.clf()
             else:
 
                 sns.scatterplot(data=temp, x="rank_" + i, y="log(10) copy number", hue="log(10) copy number",
                                 legend=False, linewidth=0.1,
                                 ax=ax)
-                plt.savefig(i + "_result.svg")
+                plt.savefig(os.path.join(output_folder, i + "_result.svg"))
                 plt.clf()
+
+
+def add_mw(df, accession_id_col):
+    df1 = df.copy()
+    for i, r in df1.iterrows():
+        seq = UniprotSequence(r[accession_id_col], True)
+        if seq.accession:
+            df1.at[i, "Accession"] = str(seq)
+    accessions = df1["Accession"].unique()
+    parser = UniprotParser(accessions, True)
+    data = []
+    for i in parser.parse("tab", method="post"):
+        frame = pd.read_csv(StringIO(i), sep="\t")
+        frame = frame.rename(columns={frame.columns[-1]: "query"})
+        data.append(frame)
+    data = pd.concat(data, ignore_index=True)
+    unmatched = []
+    for a in accessions:
+        if a not in data["query"].values:
+            unmatched.append(a)
+    if unmatched:
+        print("Non-Uniprot ID found:", unmatched)
+    data["Gene names"] = data["Gene names"].fillna("")
+    data["gene_name_list"] = data["Gene names"].str.split(" ")
+    data.loc[:, "Gene names"] = data["gene_name_list"].map(lambda x: x[0])
+    data1 = data[["query",  "Entry name", "Mass", "Gene names"]]
+    data1["queries"] = data1["query"].str.split(",")
+    data1 = data1.explode("queries")
+    res = df1.merge(data1, how="left", left_on="Accession", right_on="queries")
+    res = res.drop(columns=["Accession", "queries", "query"])
+    res = res.groupby(accession_id_col).head(1)
+    return res

@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "proteomicruler"
+version = "0.1.0"
+description = "Estimate copy number from deep profile MS experiment using the Proteomic Ruler algorithm from Wiśniewski, J. R., Hein, M. Y., Cox, J. and Mann, M. (2014) A “Proteomic Ruler” for Protein Copy Number and Concentration Estimation without Spike-in Standards. Mol Cell Proteomics 13, 3497–3506."
+authors = ["Toan K. Phung <toan.phungkhoiquoctoan@gmail.com>"]
+readme = "README.md"
+license = "MIT"
+keywords = ["proteomic", "ruler", "histone", "mass spectrometry"]
+repository = "https://github.com/noatgnu/proteomicRuler"
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.12"
+pandas = "^1.4.3"
+requests = "^2.28.1"
+scipy = "^1.9.0"
+seaborn = "^0.11.2"
+uniprotparser = "^1.0.5"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
