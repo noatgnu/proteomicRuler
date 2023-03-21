@@ -10,7 +10,7 @@ Python >= 3.9
 Installation
 --
 ```bash
-pip install proteomic-ruler
+pip install proteomicruler
 ```
 
 Usage
