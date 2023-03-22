@@ -4,7 +4,7 @@ from io import StringIO
 import numpy as np
 import pandas as pd
 from scipy.stats import rankdata
-from uniprotparser.parser import UniprotSequence, UniprotParser
+from uniprotparser.betaparser import UniprotSequence, UniprotParser
 
 from proteomicRuler import constant
 from proteomicRuler.histones import HistoneDB
@@ -216,15 +216,15 @@ def add_mw(df, accession_id_col):
     for i, r in df1.iterrows():
         seq = UniprotSequence(r[accession_id_col], True)
         if seq.accession:
-            df1.at[i, "Accession"] = str(seq)
+            df1.at[i, "Accession"] = seq.accession
     accessions = df1["Accession"].unique()
     # create a UniprotParser object to parse the data from Uniprot
-    parser = UniprotParser(accessions, True)
+    parser = UniprotParser()
     data = []
     # iterate over all parsed data and store them in a list of dataframes
-    for i in parser.parse("tab", method="post"):
+    for i in parser.parse(accessions):
         frame = pd.read_csv(StringIO(i), sep="\t")
-        frame = frame.rename(columns={frame.columns[-1]: "query"})
+        frame = frame.rename(columns={"From": "query"})
         data.append(frame)
 
     # concatenate all dataframes in the list into one dataframe
@@ -242,10 +242,10 @@ def add_mw(df, accession_id_col):
 
     # separate gene names by space and take the first gene name
     # expand the dataframe to have one accession id per row
-    data["Gene names"] = data["Gene names"].fillna("")
-    data["gene_name_list"] = data["Gene names"].str.split(" ")
-    data.loc[:, "Gene names"] = data["gene_name_list"].map(lambda x: x[0])
-    data1 = data[["query", "Entry name", "Mass", "Gene names"]]
+    data["Gene Names"] = data["Gene Names"].fillna("")
+    data["gene_name_list"] = data["Gene Names"].str.split(" ")
+    data.loc[:, "Gene Names"] = data["gene_name_list"].map(lambda x: x[0])
+    data1 = data[["query", "Entry Name", "Mass", "Gene Names"]]
     data1["queries"] = data1["query"].str.split(",")
     data1 = data1.explode("queries")
 

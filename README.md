@@ -5,6 +5,7 @@ An implementation of the same algorithm from Perseus `Wiśniewski, J. R., Hein, 
 
 Requirements
 --
+
 Python >= 3.9
 
 Installation
@@ -56,7 +57,6 @@ from proteomicRuler.ruler import add_mw
 
 df = add_mw(df, accession_id_col)
 df = df[pd.notnull(df[mw_col])]
-df[mw_col] = df[mw_col].str.replace(",", "")
 df[mw_col] = df[mw_col].astype(float)
 ```
 
