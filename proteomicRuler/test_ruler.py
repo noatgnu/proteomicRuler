@@ -2,7 +2,7 @@ from unittest import TestCase
 
 import pandas as pd
 
-from proteomicRuler.ruler import Ruler
+from proteomicRuler.ruler import Ruler, add_mw
 
 
 class TestRuler(TestCase):
@@ -23,10 +23,7 @@ class TestRuler(TestCase):
 
 class Test(TestCase):
     def test_add_mw(self):
-        from proteomicRuler.ruler import Ruler, add_mw
-        import pandas as pd
         df = pd.read_csv(r"report.pg_matrix.tsv", sep="\t")
-        accession_id_col = "Protein IDs"
         # used as unique index and to directly fetch mw data from UniProt
         mw_col = "Mass"
         # molecular weight column name
