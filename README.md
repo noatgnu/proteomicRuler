@@ -60,11 +60,29 @@ df = df[pd.notnull(df[mw_col])]
 df[mw_col] = df[mw_col].astype(float)
 ```
 
-The RuleR object can be created by passing the `DataFrame` object and the required parameters.
+The Ruler object can be created by passing the `DataFrame` object and the required parameters.
 
 ```python
 from proteomicRuler.ruler import Ruler
 
 ruler = Ruler(df, intensity_columns, mw_col, accession_id_col, ploidy, total_cellular_protein_concentration) #
 ruler.df.to_csv("output.txt", sep="\t", index=False)
+```
+
+It is also possible to use the package through the command line interface.
+
+```bash
+Usage: ruler [OPTIONS]
+
+Options:
+  -i, --input FILENAME          Input file containing intensity of samples and
+                                uniprot accession ids
+  -o, --output FILENAME         Output file
+  -p, --ploidy INTEGER          Ploidy of the organism
+  -t, --total-cellular FLOAT    Total cellular protein concentration
+  -m, --mw-column TEXT          Molecular weight column name
+  -a, --accession-id-col TEXT   Accession id column name
+  -c, --intensity-columns TEXT  Intensity columns list delimited by commas
+  -g, --get-mw                  Get molecular weight from uniprot
+  --help                        Show this message and exit.
 ```

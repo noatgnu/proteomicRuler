@@ -217,6 +217,10 @@ def add_mw(df, accession_id_col):
         seq = UniprotSequence(r[accession_id_col], True)
         if seq.accession:
             df1.at[i, "Accession"] = seq.accession
+        else:
+            print("No accession found for protein " + r[accession_id_col])
+            df1.at[i, "Accession"] = r[accession_id_col]
+
     accessions = df1["Accession"].unique()
     # create a UniprotParser object to parse the data from Uniprot
     parser = UniprotParser()
