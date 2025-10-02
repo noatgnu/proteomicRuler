@@ -102,7 +102,7 @@ class Ruler:
         for i, r in self.df.iterrows():
             for c in self.sample_name_dict:
                 if not pd.notnull(r[c]):
-                    self.df.at["rank_" + c] = np.nan
+                    self.df.at[i, "rank_" + c] = np.nan
                     maxrank[c] -= 1
         for i, r in self.df.iterrows():
             for c in self.sample_name_dict:
